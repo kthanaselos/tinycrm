@@ -6,63 +6,15 @@ namespace TinyCRM
     {
         static void Main(string[] args)
         {
-            Console.WriteLine("Dose afm");
-
-            if (IsValidAfm(Console.ReadLine()))
+            try
             {
-                Console.WriteLine("valid afm");
-            }
-            else
+                var kthanaselos = new Customer("123456789");
+            } catch (Exception ex)
             {
-                Console.WriteLine("NOT valid afm");
+                Console.WriteLine($"{ex.Message}");
             }
-        }
-
-        public static bool IsValidAfm(string afm)
-        {
-            if (string.IsNullOrWhiteSpace(afm))
-            {
-                return false;
-            }
-
-            afm = afm.Trim();
-
-            if (int.TryParse(afm, out int result) && afm.Length == 9)
-            {
-                return true;
-            }
-            else
-            {
-                return false;
-            }
-        }
-
-        public static bool IsAdult(int age)
-        {
-            if (age >= 18)
-            {
-                return true;
-            }
-            else
-            {
-                return false;
-            }
-        }
-
-        public static bool IsValidEmail(string email)
-        {
-            if (string.IsNullOrWhiteSpace(email))
-            {
-                return false;
-            }
-            email = email.Trim();
-
-            if (email.Contains("@") && email.EndsWith(".com"))
-            {
-                return true;
-            }
-
-            return false;
+            
+            
         }
     }
 }
