@@ -6,7 +6,7 @@ namespace TinyCRM
 {
     public class Customer
     {
-
+        public string CustomerId { get; set; }
         public DateTime Created { get; private set; }
         public string Firstname { get; set; }
         public string Lastname { get; set; }
