@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Linq;
 
 namespace TinyCRM
 {
@@ -13,8 +14,10 @@ namespace TinyCRM
         public string Email { get; set; }
         public string VatNumber { get; private set; }
         public string Phone { get; set; }
-        public decimal TotalGross { get; private set; }
+        public decimal TotalGross { get { return CalculateTotalGross(); } }
         public bool IsActive { get; set; }
+        public List<Order> OrderList { get; set; }
+
 
         public Customer(string vat)
         {
@@ -25,6 +28,20 @@ namespace TinyCRM
 
             VatNumber = vat;
             Created = DateTime.Now;
+            OrderList = new List<Order>();
+        }
+
+        private decimal CalculateTotalGross()
+        {
+            decimal sum = 0;
+            foreach (var order in OrderList)
+            {
+                foreach (var p in order.ProductList)
+                {
+                    sum = sum + p.Price;
+                }
+            }
+            return sum;
         }
 
         public bool IsHighValuedCustomer()
