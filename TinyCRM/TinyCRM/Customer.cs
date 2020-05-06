@@ -7,29 +7,29 @@ namespace TinyCRM
 {
     public class Customer
     {
-        public string CustomerId { get; set; }
+        public int CustomerId { get; set; }
         public DateTime Created { get; private set; }
         public string Firstname { get; set; }
         public string Lastname { get; set; }
         public string Email { get; set; }
-        public string VatNumber { get; private set; }
+        public string VatNumber { get; set; }
         public string Phone { get; set; }
         public decimal TotalGross { get { return CalculateTotalGross(); } }
         public bool IsActive { get; set; }
         public List<Order> OrderList { get; set; }
 
 
-        public Customer(string vat)
-        {
-            if (!IsValidVat(vat))
-            {
-                throw new Exception("Invalid VatNumber");
-            }
+        //public Customer(string vat)
+        //{
+        //    if (!IsValidVat(vat))
+        //    {
+        //        throw new Exception("Invalid VatNumber");
+        //    }
 
-            VatNumber = vat;
-            Created = DateTime.Now;
-            OrderList = new List<Order>();
-        }
+        //    VatNumber = vat;
+        //    Created = DateTime.Now;
+        //    OrderList = new List<Order>();
+        //}
 
         private decimal CalculateTotalGross()
         {
