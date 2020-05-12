@@ -11,6 +11,6 @@ namespace TinyCRM
         public string VatNumber { get; set; }
         public DateTime CreatedFrom { get; set; }
         public DateTime CreatedTo { get; set; }
-        public int CustomerId { get; set; }
+        public int? CustomerId { get; set; }
     }
 }

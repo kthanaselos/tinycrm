@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace TinyCRM.Migrations
 {
-    public partial class initial : Migration
+    public partial class brandNewMigration : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -19,6 +19,7 @@ namespace TinyCRM.Migrations
                     Email = table.Column<string>(nullable: true),
                     VatNumber = table.Column<string>(nullable: true),
                     Phone = table.Column<string>(nullable: true),
+                    TotalGross = table.Column<decimal>(nullable: false),
                     IsActive = table.Column<bool>(nullable: false)
                 },
                 constraints: table =>
@@ -27,10 +28,28 @@ namespace TinyCRM.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "Product",
+                columns: table => new
+                {
+                    ProductId = table.Column<string>(nullable: false),
+                    Name = table.Column<string>(nullable: true),
+                    Description = table.Column<string>(nullable: true),
+                    Price = table.Column<decimal>(nullable: false),
+                    SoldQuantity = table.Column<int>(nullable: false),
+                    Category = table.Column<int>(nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Product", x => x.ProductId);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Order",
                 columns: table => new
                 {
-                    OrderId = table.Column<string>(nullable: false),
+                    OrderId = table.Column<int>(nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Created = table.Column<DateTimeOffset>(nullable: false),
                     DeliveryAddress = table.Column<string>(nullable: true),
                     TotalAmount = table.Column<decimal>(nullable: false),
                     CustomerId = table.Column<int>(nullable: true)
@@ -47,25 +66,27 @@ namespace TinyCRM.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Product",
+                name: "OrderProduct",
                 columns: table => new
                 {
-                    ProductId = table.Column<string>(nullable: false),
-                    Name = table.Column<string>(nullable: true),
-                    Description = table.Column<string>(nullable: true),
-                    Price = table.Column<decimal>(nullable: false),
-                    SoldQuantity = table.Column<int>(nullable: false),
-                    OrderId = table.Column<string>(nullable: true)
+                    OrderId = table.Column<int>(nullable: false),
+                    ProductId = table.Column<string>(nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Product", x => x.ProductId);
+                    table.PrimaryKey("PK_OrderProduct", x => new { x.ProductId, x.OrderId });
                     table.ForeignKey(
-                        name: "FK_Product_Order_OrderId",
+                        name: "FK_OrderProduct_Order_OrderId",
                         column: x => x.OrderId,
                         principalTable: "Order",
                         principalColumn: "OrderId",
-                        onDelete: ReferentialAction.Restrict);
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_OrderProduct_Product_ProductId",
+                        column: x => x.ProductId,
+                        principalTable: "Product",
+                        principalColumn: "ProductId",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateIndex(
@@ -74,18 +95,21 @@ namespace TinyCRM.Migrations
                 column: "CustomerId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Product_OrderId",
-                table: "Product",
+                name: "IX_OrderProduct_OrderId",
+                table: "OrderProduct",
                 column: "OrderId");
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "Product");
+                name: "OrderProduct");
 
             migrationBuilder.DropTable(
                 name: "Order");
+
+            migrationBuilder.DropTable(
+                name: "Product");
 
             migrationBuilder.DropTable(
                 name: "Customer");

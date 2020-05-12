@@ -14,7 +14,7 @@ namespace TinyCRM
         public string Email { get; set; }
         public string VatNumber { get; set; }
         public string Phone { get; set; }
-        public decimal TotalGross { get { return CalculateTotalGross(); } }
+        public decimal TotalGross { get; set; } 
         public bool IsActive { get; set; }
         public List<Order> OrderList { get; set; }
 
@@ -31,27 +31,15 @@ namespace TinyCRM
         //    OrderList = new List<Order>();
         //}
 
-        private decimal CalculateTotalGross()
+        public Customer()
         {
-            decimal sum = 0;
-            foreach (var order in OrderList)
-            {
-                foreach (var p in order.ProductList)
-                {
-                    sum = sum + p.Price;
-                }
-            }
-            return sum;
+            OrderList = new List<Order>();
+            Created = DateTime.Now;
         }
 
         public bool IsHighValuedCustomer()
         {
             return TotalGross >= 10000M;
-        }
-
-        public void SetPhone(string phone)
-        {
-            Phone = phone;
         }
 
         public bool IsValidVat(string vatnumber)

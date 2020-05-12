@@ -1,7 +1,10 @@
-﻿using System;
+﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Internal;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using TinyCRM.Options;
 
 namespace TinyCRM
 {
@@ -142,145 +145,18 @@ namespace TinyCRM
 
         static void Main(string[] args)
         {
-            //var tinyCrmDbContext = new TinyCrmDbContext();
-
-            //// insert
-            //var customer = new Customer()
-            //{
-            //    Firstname = "Konstantinos",
-            //    Lastname = "Thanaselos",
-            //    Email = "kthanaselos@gmail.com"
-            //};
-
-            //tinyCrmDbContext.Add(customer);
-            //tinyCrmDbContext.SaveChanges();
-
-            //// Get data
-            //var customer2 = tinyCrmDbContext
-            //    .Set<Customer>()
-            //    .Where(c => c.CustomerId == 2)
-            //    .ToList()
-            //    .SingleOrDefault();
-
-            //// Update data
-            //customer2.Phone = "6976512900";
-            //tinyCrmDbContext.SaveChanges();
-
-            //// Delete
-            //tinyCrmDbContext.Remove(customer2);
-            //tinyCrmDbContext.SaveChanges();
-
-
-            //START OF ASSIGNMENT FOR 7 MAY 2020
-
-            var custOptions = new CustomerSearchOptions()
+            using (var context = new TinyCrmDbContext())
             {
-                FirstName = "Konstantinos",
-                LastName = "Thanaselos",
-                VatNumber = "123456789",
-                CreatedFrom = new DateTime(2020, 5, 5),
-                CreatedTo = new DateTime(2020, 5, 6),
-                CustomerId = 2
+                ICustomerService customerService = new CustomerService(context);
+                var result = customerService.SearchCustomer(new CustomerSearchOptions()
+                { LastName = "Thanaselos" })
+                .Include(c => c.OrderList)
+                .ThenInclude(o => o.OrderProducts)
+                .ThenInclude(op => op.Product)
+                .SingleOrDefault();
+
+                Console.WriteLine(result.OrderList[3].OrderProducts[1].Product.Name);
             };
-
-            var result1=SearchCustomers(custOptions);
-
-            var prodOptions = new ProductSearchOptions()
-            {
-                ProductId = null,
-                PriceFrom = 21.42m,
-                PriceTo = 50m,
-                Categories = { "televisions", "smartphones" }
-            };
-
-            var result2 = SearchProducts(prodOptions);
-        }
-
-        public static List<Customer> SearchCustomers(CustomerSearchOptions options) // Παραδοχή υλοποιησης: Εχει δωθεί τιμή σε όλα τα searchOptions. Κακή παραδοχή ..."I know", για αυτο skip στην SearchProducts() που ειναι πιο σωστη
-        {
-            using var tinyCrmDbContext = new TinyCrmDbContext();
-
-            var result = tinyCrmDbContext
-                .Set<Customer>()
-                .Where(c => (c.CustomerId == options.CustomerId) ||
-                            (c.Firstname == options.FirstName) ||
-                            (c.Lastname == options.LastName) ||
-                            (c.VatNumber == options.VatNumber) ||
-                            ((c.Created >= options.CreatedFrom) && (c.Created <= options.CreatedTo)))
-                .Take(500)
-                .ToList();
-            return result;
-        }
-
-        public static List<Product> SearchProducts(ProductSearchOptions options) // Παραδοχή υλοποίησης: Μπορεί να ΜΗΝ εχει δωθεί τιμή σε ΟΛΑ τα searchOptions
-        {
-            using var tinyCrmDbContext = new TinyCrmDbContext();
-
-            var result1 = new Product();
-            if (!string.IsNullOrWhiteSpace(options.ProductId)) //ψαχνουμε το προφανως μοναδικο product με βαση ProdustId ΑΝ μας έχει δωθεί. (Παρατηρηση: Εδώ το Productid είναι ακόμα string λόγω της προηγουμενης ασκησης και οχι integer)
-            {
-                result1 = tinyCrmDbContext.Set<Product>().Where(p => p.ProductId == options.ProductId).SingleOrDefault();
-            }
-
-            var result2 = new List<Product>();
-            if ((options.PriceFrom != null && options.PriceTo != null)) //ψαχνουμε τα products αναλογα με τα 2 όρια τιμων που εχουν δωθεί 
-            {
-                result2 = tinyCrmDbContext
-                    .Set<Product>()
-                    .Where(p => (p.Price >= options.PriceFrom) && (p.Price <= options.PriceTo))
-                    .Take(500)
-                    .ToList();
-            }
-            else if (options.PriceFrom != null)//ψαχνουμε τα products αναλογα με το κάτω όριο τιμης που εχει δωθει
-            {
-                result2 = tinyCrmDbContext
-                    .Set<Product>()
-                    .Where(p => (p.Price >= options.PriceFrom))
-                    .Take(500)
-                    .ToList();
-            }
-            else if (options.PriceTo != null)//ψαχνουμε τα products αναλογα με το άνω όριο τιμης που εχει δωθει
-            {
-                result2 = tinyCrmDbContext
-                    .Set<Product>()
-                    .Where(p => (p.Price <= options.PriceTo))
-                    .Take(500)
-                    .ToList();
-            }
-
-            var result3 = new List<Product>();
-            if (options.Categories != null) //ελεγχουμε αν μας δωθηκε κατηγορία/ες προιοντων
-            {
-                foreach (var categ in options.Categories) //για καθε category που μας δωθηκε φερνουμε τα αποτελεσματα απο τη βαση
-                {
-                    var tempResult = tinyCrmDbContext
-                                    .Set<Product>()
-                                    .Where(p => (p.ProductCategory == categ))
-                                    .Take(500)
-                                    .ToList();
-                    if (tempResult.Count != 0) //αν υπηρχαν αποτελεματα απο καθε κατηγορια τα βαζουμε σε μια κοινη λιστα
-                    {
-                        result3.AddRange(tempResult);
-                    }
-                }
-            }
-
-            var finalResult = new List<Product>(); // φτιαχνουμε την τελικη λιστα που θα επιστρεψουμε αφου ελεγξουμε οτι η βαση μας εδωσε αποτελεσματα για καθε περιπτωση.
-
-            if (result1 != null)
-            {
-                finalResult.Add(result1);
-            }
-            if (result2.Count != 0)
-            {
-                finalResult.AddRange(result2);
-            }
-            if (result3.Count != 0)
-            {
-                finalResult.AddRange(result3);
-            }
-
-            return finalResult.Take(500).ToList();
         }
     }
 }

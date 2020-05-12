@@ -44,6 +44,9 @@ namespace TinyCRM.Migrations
                     b.Property<string>("Phone")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<decimal>("TotalGross")
+                        .HasColumnType("decimal(18,2)");
+
                     b.Property<string>("VatNumber")
                         .HasColumnType("nvarchar(max)");
 
@@ -54,10 +57,15 @@ namespace TinyCRM.Migrations
 
             modelBuilder.Entity("TinyCRM.Order", b =>
                 {
-                    b.Property<string>("OrderId")
-                        .HasColumnType("nvarchar(450)");
+                    b.Property<int>("OrderId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-                    b.Property<int?>("CustomerId")
+                    b.Property<DateTimeOffset>("Created")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<int>("CustomerId")
                         .HasColumnType("int");
 
                     b.Property<string>("DeliveryAddress")
@@ -73,10 +81,28 @@ namespace TinyCRM.Migrations
                     b.ToTable("Order");
                 });
 
+            modelBuilder.Entity("TinyCRM.OrderProduct", b =>
+                {
+                    b.Property<string>("ProductId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<int>("OrderId")
+                        .HasColumnType("int");
+
+                    b.HasKey("ProductId", "OrderId");
+
+                    b.HasIndex("OrderId");
+
+                    b.ToTable("OrderProduct");
+                });
+
             modelBuilder.Entity("TinyCRM.Product", b =>
                 {
                     b.Property<string>("ProductId")
                         .HasColumnType("nvarchar(450)");
+
+                    b.Property<int>("Category")
+                        .HasColumnType("int");
 
                     b.Property<string>("Description")
                         .HasColumnType("nvarchar(max)");
@@ -84,21 +110,13 @@ namespace TinyCRM.Migrations
                     b.Property<string>("Name")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("OrderId")
-                        .HasColumnType("nvarchar(450)");
-
                     b.Property<decimal>("Price")
                         .HasColumnType("decimal(18,2)");
-
-                    b.Property<string>("ProductCategory")
-                        .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("SoldQuantity")
                         .HasColumnType("int");
 
                     b.HasKey("ProductId");
-
-                    b.HasIndex("OrderId");
 
                     b.ToTable("Product");
                 });
@@ -107,14 +125,24 @@ namespace TinyCRM.Migrations
                 {
                     b.HasOne("TinyCRM.Customer", null)
                         .WithMany("OrderList")
-                        .HasForeignKey("CustomerId");
+                        .HasForeignKey("CustomerId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
-            modelBuilder.Entity("TinyCRM.Product", b =>
+            modelBuilder.Entity("TinyCRM.OrderProduct", b =>
                 {
-                    b.HasOne("TinyCRM.Order", null)
-                        .WithMany("ProductList")
-                        .HasForeignKey("OrderId");
+                    b.HasOne("TinyCRM.Order", "Order")
+                        .WithMany("OrderProducts")
+                        .HasForeignKey("OrderId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("TinyCRM.Product", "Product")
+                        .WithMany()
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 #pragma warning restore 612, 618
         }
