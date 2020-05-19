@@ -12,6 +12,8 @@ namespace TinyCrm.Core.Services
 
         Customer GetCustomerById(int id);
 
-        Customer UpdateCustomer(CustomerUpdateOptions options, Customer customer);
+        Customer UpdateCustomer(CustomerUpdateOptions options, int id);
+
+        public bool DeleteCustomerById(int id);
     }
 }

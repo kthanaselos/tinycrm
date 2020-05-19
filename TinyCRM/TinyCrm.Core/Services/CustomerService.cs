@@ -20,6 +20,11 @@ namespace TinyCrm.Core.Services
                 return null;
             }
 
+            if (string.IsNullOrWhiteSpace(options.Vatnumber))
+            {
+                return null;
+            }
+
             var customer = new Customer()
             {
                 Firstname = options.Firstname,
@@ -98,8 +103,10 @@ namespace TinyCrm.Core.Services
             return customer;
         }
 
-        public Customer UpdateCustomer (CustomerUpdateOptions options,Customer customer) //orisma Customer h kalytera CustomerId???
+        public Customer UpdateCustomer (CustomerUpdateOptions options,int id)
         {
+            var customer = GetCustomerById(id);
+
             if (options == null || customer==null)
             {
                 return null;
@@ -118,7 +125,7 @@ namespace TinyCrm.Core.Services
             }
             if (options.Phone != null)
             {
-                customer.Phone = options.Email;
+                customer.Phone = options.Phone;
             }
             if (options.IsActive != null)
             {
@@ -132,6 +139,17 @@ namespace TinyCrm.Core.Services
 
             return null;
 
+        }
+
+        public bool DeleteCustomerById(int id)
+        {
+            var customer = GetCustomerById(id);
+            dbContext.Remove(customer);
+            if (dbContext.SaveChanges() > 0)
+            {
+                return true;
+            }
+            return false;
         }
     }
 }

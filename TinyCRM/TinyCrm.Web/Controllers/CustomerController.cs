@@ -10,6 +10,7 @@ using TinyCrm.Core.Services.Options;
 
 namespace TinyCrm.Web.Controllers
 {
+    [Route("customer")]
     public class CustomerController : Controller
     {
         private TinyCrmDbContext dbContext;
@@ -20,6 +21,21 @@ namespace TinyCrm.Web.Controllers
             customerService = new CustomerService(dbContext);
         }
 
+        [HttpPost]
+        public IActionResult Create([FromBody] CreateCustomerOptions options)
+        {
+            var customer = customerService.CreateCustomer(options);
+
+            if (customer == null)
+            {
+                return BadRequest();
+            }
+
+            return Json(customer);
+        }
+
+
+        [HttpGet]
         public IActionResult Index()
         {
             var customerList = customerService
@@ -29,11 +45,54 @@ namespace TinyCrm.Web.Controllers
             return Json(customerList);
         }
 
-        public IActionResult Search()
+        [HttpPatch("{id}")]
+        public IActionResult Update(int id,[FromBody] CustomerUpdateOptions options)
         {
-            //todo
+            if (options == null)
+            {
+                return BadRequest();
+            }
+
+            var customer = customerService.UpdateCustomer(options,id);
+
+            return Json(customer);
         }
 
+        [HttpDelete("{id}")]
+        public IActionResult Delete(int id)
+        {
+            var result = customerService.DeleteCustomerById(id);
+            if (result == false)
+            {
+                return NotFound();
+            }
+            else
+            {
+                return Ok();
+            }
+        }
+
+        [HttpGet]
+        public IActionResult Search(CustomerSearchOptions options)
+        {
+            if (options == null)
+            {
+                return BadRequest();
+            }
+
+            var customers = customerService
+                .SearchCustomer(options)
+                .ToList();
+
+            if (customers == null)
+            {
+                return NotFound();
+            }
+
+            return Json(customers);
+        }
+
+        [HttpGet("{id}")]
         public IActionResult GetByiD(int? id)
         {
             if (id == null)
