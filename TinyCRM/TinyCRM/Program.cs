@@ -13,18 +13,7 @@ namespace TinyCRM
     {
         static void Main(string[] args)
         {
-            using (var context = new TinyCrmDbContext())
-            {
-                ICustomerService customerService = new CustomerService(context);
-                var customer = customerService.CreateCustomer(new CreateCustomerOptions()
-                {
-                    Firstname = "Konstantinos",
-                    Lastname = "Thanaselos",
-                    Email = "kthanaselos@gmail.com",
-                    Vatnumber = "123456789",
-                    Phone = "6976512900"
-                });
-            };
+
         }
 
         public static void PopulateProductsByFile()

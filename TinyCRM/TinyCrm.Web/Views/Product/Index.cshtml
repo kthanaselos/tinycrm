@@ -1,0 +1,31 @@
+﻿
+@{
+    ViewData["Title"] = "Index";
+}
+
+@model List<TinyCrm.Core.Model.Product>
+
+
+<h2 class="display-4">Products</h2>
+
+<table class="table table-striped table-hover">
+    <thead class="thead-dark">
+        <tr>
+            <th scope="col">#</th>
+            <th scope="col">Name</th>
+            <th scope="col">Price</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var c in Model)
+        {
+            <tr>
+                <th scope="row">@c.ProductId</th>
+                <td>@c.Name</td>
+                <td>@c.Price</td>
+            </tr>
+        }
+    </tbody>
+</table>
+<h5>Total Products: @Model.Count()</h5>
+

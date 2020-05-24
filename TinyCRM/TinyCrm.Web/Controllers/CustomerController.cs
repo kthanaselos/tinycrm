@@ -13,63 +13,99 @@ namespace TinyCrm.Web.Controllers
     [Route("customer")]
     public class CustomerController : Controller
     {
-        private TinyCrmDbContext dbContext;
         private ICustomerService customerService;
-        public CustomerController()
+        public CustomerController(ICustomerService cService)
         {
-            dbContext = new TinyCrmDbContext();
-            customerService = new CustomerService(dbContext);
+            customerService = cService;
         }
 
         [HttpPost]
         public IActionResult Create([FromBody] CreateCustomerOptions options)
         {
-            var customer = customerService.CreateCustomer(options);
+            var result = customerService.CreateCustomer(options);
 
-            if (customer == null)
-            {
-                return BadRequest();
+            if (!result.Success){
+                return StatusCode((int)result.ErrorCode, result.ErrorText);
             }
 
-            return Json(customer);
+            return Json(result.Data);
         }
 
 
-        [HttpGet]
+        [HttpGet("index")]
         public IActionResult Index()
         {
             var customerList = customerService
                 .SearchCustomer(new CustomerSearchOptions())
                 .ToList();
 
-            return Json(customerList);
+            return View(customerList);
+        }
+
+        [HttpGet("{id}/edit")]
+        public IActionResult Edit(int? id)
+        {
+            if (id == null)
+            {
+                return BadRequest();
+            }
+            var customer = customerService.SearchCustomer(new CustomerSearchOptions()
+            {
+                CustomerId = id
+            }).SingleOrDefault();
+
+            if (customer == null)
+            {
+                return NotFound();
+            }
+
+            return View(customer);
+        }
+
+        [HttpGet("{id}")]
+        public IActionResult GetById(int? id)
+        {
+            if (id == null)
+            {
+                return BadRequest();
+            }
+            var customer = customerService.SearchCustomer(new CustomerSearchOptions()
+            {
+                CustomerId = id
+            }).SingleOrDefault();
+
+            if (customer == null)
+            {
+                return NotFound();
+            }
+
+            return View(customer);
         }
 
         [HttpPatch("{id}")]
         public IActionResult Update(int id,[FromBody] CustomerUpdateOptions options)
         {
-            if (options == null)
+            var result = customerService.UpdateCustomer(options,id);
+
+            if (!result.Success)
             {
-                return BadRequest();
+                return StatusCode((int)result.ErrorCode, result.ErrorText);
             }
 
-            var customer = customerService.UpdateCustomer(options,id);
-
-            return Json(customer);
+            return Ok();
         }
 
         [HttpDelete("{id}")]
-        public IActionResult Delete(int id)
+        public IActionResult DeleteCustomer(int id)
         {
             var result = customerService.DeleteCustomerById(id);
-            if (result == false)
+
+            if (!result.Success)
             {
-                return NotFound();
+                return StatusCode((int)result.ErrorCode, result.ErrorText);
             }
-            else
-            {
-                return Ok();
-            }
+
+            return Ok();
         }
 
         [HttpGet]
@@ -90,26 +126,6 @@ namespace TinyCrm.Web.Controllers
             }
 
             return Json(customers);
-        }
-
-        [HttpGet("{id}")]
-        public IActionResult GetByiD(int? id)
-        {
-            if (id == null)
-            {
-                return BadRequest();
-            }
-            var customer = customerService.SearchCustomer(new CustomerSearchOptions()
-            {
-                CustomerId = id
-            }).SingleOrDefault();
-
-            if (customer == null)
-            {
-                return NotFound();
-            }
-
-            return Json(customer);
         }
     }
 }

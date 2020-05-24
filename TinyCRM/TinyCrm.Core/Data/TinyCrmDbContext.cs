@@ -5,6 +5,11 @@ namespace TinyCrm.Core.Data
 {
     public class TinyCrmDbContext: DbContext
     {
+        public TinyCrmDbContext(DbContextOptions<TinyCrmDbContext> options) : base(options)
+        { 
+
+        }
+
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
             base.OnConfiguring(optionsBuilder);

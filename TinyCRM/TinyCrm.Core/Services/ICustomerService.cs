@@ -8,12 +8,12 @@ namespace TinyCrm.Core.Services
     {
         IQueryable<Customer> SearchCustomer(CustomerSearchOptions options);
 
-        Customer CreateCustomer(CreateCustomerOptions options);
+        Result<Customer> CreateCustomer(CreateCustomerOptions options);
 
         Customer GetCustomerById(int id);
 
-        Customer UpdateCustomer(CustomerUpdateOptions options, int id);
+        Result<bool> UpdateCustomer(CustomerUpdateOptions options, int id);
 
-        public bool DeleteCustomerById(int id);
+        Result<bool> DeleteCustomerById(int id);
     }
 }

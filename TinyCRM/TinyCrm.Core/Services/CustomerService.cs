@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Net.Sockets;
 using TinyCrm.Core.Data;
 using TinyCrm.Core.Model;
 using TinyCrm.Core.Services.Options;
@@ -13,16 +14,20 @@ namespace TinyCrm.Core.Services
         {
             dbContext= context;
         }
-        public Customer CreateCustomer(CreateCustomerOptions options)
+        public Result<Customer> CreateCustomer(CreateCustomerOptions options)
         {
             if (options == null)
             {
-                return null;
+                return Result<Customer>
+                    .CreateFailed(StatusCode.BadRequest, "Null options");
             }
 
             if (string.IsNullOrWhiteSpace(options.Vatnumber))
             {
-                return null;
+
+                return Result<Customer>
+                    .CreateFailed(StatusCode.BadRequest, "Null or empty Vatnumber");
+                
             }
 
             var customer = new Customer()
@@ -37,13 +42,26 @@ namespace TinyCrm.Core.Services
 
             dbContext.Add(customer);
 
-            if (dbContext.SaveChanges() > 0)
+            try
             {
-                return customer;
+                if (dbContext.SaveChanges() > 0)
+                {
+                    return Result<Customer>
+                    .CreateSuccessful(customer);
+                }
+                else
+                {
+                    return Result<Customer>
+                    .CreateFailed(StatusCode.InternalServerError, "Customer could not be updated");
+
+                }
+
             }
-
-            return null;
-
+            catch(Exception ex)
+            {
+                return Result<Customer>
+                    .CreateFailed(StatusCode.InternalServerError, ex.ToString());
+            }
         }
 
         public IQueryable<Customer> SearchCustomer(CustomerSearchOptions options)
@@ -103,13 +121,23 @@ namespace TinyCrm.Core.Services
             return customer;
         }
 
-        public Customer UpdateCustomer (CustomerUpdateOptions options,int id)
+        public Result<bool> UpdateCustomer (CustomerUpdateOptions options,int id)
         {
-            var customer = GetCustomerById(id);
-
-            if (options == null || customer==null)
+            var result = new Result<bool>();
+            
+            if (options == null)
             {
-                return null;
+                result.ErrorCode = StatusCode.BadRequest;
+                result.ErrorText = "Null options";
+                return result;
+            }
+
+            var customer = GetCustomerById(id);
+            if (customer == null)
+            {
+                result.ErrorCode = StatusCode.NotFound;
+                result.ErrorText = $"Customer with id {id} was not found";
+                return result;
             }
             if (options.Firstname != null)
             {
@@ -134,22 +162,57 @@ namespace TinyCrm.Core.Services
 
             if (dbContext.SaveChanges() > 0)
             {
-                return customer;
+                result.ErrorCode = StatusCode.OK;
+                result.Data = true;
+                return result;
             }
 
-            return null;
+            result.ErrorCode = StatusCode.InternalServerError;
+            result.ErrorText = $"Customer could not be updated";
+            return result;
 
         }
 
-        public bool DeleteCustomerById(int id)
+        public Result<bool> DeleteCustomerById(int id)
         {
-            var customer = GetCustomerById(id);
-            dbContext.Remove(customer);
-            if (dbContext.SaveChanges() > 0)
+            var result = new Result<bool>();
+
+            if (id <= 0)
             {
-                return true;
+                result.ErrorCode = StatusCode.BadRequest;
+                result.ErrorText = $"Id {id} is invalid";
+                return result;
             }
-            return false;
+
+            var customer = GetCustomerById(id);
+
+            if (customer == null)
+            {
+                result.ErrorCode = StatusCode.NotFound;
+                result.ErrorText = $"Customer with id {id} was not found";
+                return result;
+            }
+
+            try
+            {
+                dbContext.Remove(customer);
+                if (dbContext.SaveChanges() > 0)
+                {
+                    result.ErrorCode = StatusCode.OK;
+                    result.Data = true;
+                    return result;
+                }
+            }catch (Exception ex)
+            {
+                result.ErrorCode = StatusCode.InternalServerError;
+                result.ErrorText = ex.ToString();
+                return result;
+            }
+
+            result.ErrorCode = StatusCode.InternalServerError;
+            result.ErrorText = $"Customer could not be deleted";
+            return result;
+
         }
     }
 }

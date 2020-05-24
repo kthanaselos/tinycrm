@@ -14,29 +14,40 @@ namespace TinyCrm.Web.Controllers
 {
     public class HomeController : Controller
     {
-        private readonly ILogger<HomeController> _logger;
+        private TinyCrmDbContext dbContext;
+        private ICustomerService customerService;
+        private IProductService productService;
 
-        public HomeController(ILogger<HomeController> logger)
+        public HomeController(ICustomerService cService,IProductService pService,TinyCrmDbContext context)
         {
-            _logger = logger;
+            customerService = cService;
+            productService = pService;
+            dbContext = context;
         }
 
         public IActionResult Index()
         {
-            return View();
+            var model = new HomeViewModel();
+
+            model.Customers = customerService.SearchCustomer(
+                new CustomerSearchOptions())
+                .ToList(); 
+
+            model.Products = productService.SearchProduct(new ProductSearchOptions())
+                .ToList();
+            
+            return View(model);
         }
 
         public IActionResult Privacy()
         {
-            using (var context =new TinyCrmDbContext())
-            {
-                var customerService = new CustomerService(context);
-                var customer = customerService.SearchCustomer(new CustomerSearchOptions()
-                {
-                    CustomerId=1
-                }).SingleOrDefault();
-                return Json(customer);
-            }
+            return View();
+        }
+
+
+        public IActionResult AddProduct()
+        {
+            return View();
         }
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]

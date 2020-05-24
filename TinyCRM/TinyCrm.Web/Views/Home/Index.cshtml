@@ -1,4 +1,6 @@
-﻿@{
+﻿@model HomeViewModel
+
+@{
     ViewData["Title"] = "Home Page";
 }
 
@@ -6,3 +8,54 @@
     <h1 class="display-4">Welcome</h1>
     <p>Learn about <a href="https://docs.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
 </div>
+
+
+<h2>Customers</h2>
+<table class="table table-striped table-hover">
+    <thead class="thead-dark">
+        <tr>
+            <th scope="col">#</th>
+            <th scope="col">First Name</th>
+            <th scope="col">Last Name</th>
+            <th scope="col">Vat Number</th>
+            <th scope="col">Gross</th>
+            <th scope="col">Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var c in Model.Customers)
+        {
+            <tr>
+                <th scope="row">@c.CustomerId</th>
+                <td>@c.Firstname</td>
+                <td>@c.Lastname</td>
+                <td>@c.VatNumber</td>
+                <td>@c.TotalGross</td>
+                <td><a class="nav-link" href="@Url.Action("GetById", "Customer", new {id = c.CustomerId })">Details</a></td>
+            </tr>
+        }
+    </tbody>
+</table>
+<h5>TotalCustomers: @Model.Customers.Count()</h5>
+
+<h2>Products</h2>
+<table class="table table-striped table-hover">
+    <thead class="thead-dark">
+        <tr>
+            <th scope="col">#</th>
+            <th scope="col">Name</th>
+            <th scope="col">Price</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var c in Model.Products)
+        {
+            <tr>
+                <th scope="row">@c.ProductId</th>
+                <td>@c.Name</td>
+                <td>@c.Price</td>
+            </tr>
+        }
+    </tbody>
+</table>
+<h5>TotalProducts: @Model.Products.Count()</h5>
